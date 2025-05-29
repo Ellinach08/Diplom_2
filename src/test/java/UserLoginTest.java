@@ -13,13 +13,14 @@ import static org.hamcrest.CoreMatchers.equalTo;
 
 public class UserLoginTest {
 
-    public static String name = RandomStringUtils.randomAlphabetic(10);
-    public static String password = RandomStringUtils.randomAlphabetic(10);
-    public static String badPassword = RandomStringUtils.randomAlphabetic(10);
-    public static String email = String.format("%s@%s.ru", RandomStringUtils.randomAlphabetic(5).toLowerCase(),
+    private final String name = RandomStringUtils.randomAlphabetic(10);
+    private final String password = RandomStringUtils.randomAlphabetic(10);
+    private final String badPassword = RandomStringUtils.randomAlphabetic(10);
+    private final String email = String.format("%s@%s.ru", RandomStringUtils.randomAlphabetic(5).toLowerCase(),
             RandomStringUtils.randomAlphabetic(3).toLowerCase());
-    public static String badEmail = String.format("%s@%s.ru", RandomStringUtils.randomAlphabetic(5).toLowerCase(),
+    private final String badEmail = String.format("%s@%s.ru", RandomStringUtils.randomAlphabetic(5).toLowerCase(),
             RandomStringUtils.randomAlphabetic(3).toLowerCase());
+    private final String userUnauthorizedMessage = "email or password are incorrect";
 
     private final UserSteps userSteps = new UserSteps();
 
@@ -38,7 +39,7 @@ public class UserLoginTest {
     @Test
     @DisplayName("Логин существующего пользователем")
     @Description("Проверка логина существующего пользователя")
-    public void loginUser() {
+    public void loginUserTest() {
         UserLoginRequest userLoginRequest = new UserLoginRequest(email, password);
         userSteps.userLogin(userLoginRequest)
                 .assertThat().statusCode(HttpStatus.SC_OK)
@@ -49,22 +50,26 @@ public class UserLoginTest {
     @Test
     @DisplayName("Логин пользователя с неверным email")
     @Description("Проверка ошибки логина пользователя с неверным email")
-    public void loginUserWithBadEmail() {
+    public void loginUserWithBadEmailTest() {
         UserLoginRequest userBadLoginRequest = new UserLoginRequest(badEmail, password);
         userSteps.userLogin(userBadLoginRequest)
                 .assertThat().statusCode(HttpStatus.SC_UNAUTHORIZED)
                 .and()
-                .body("success", equalTo(false));
+                .body("success", equalTo(false))
+                .and()
+                .body("message", equalTo(userUnauthorizedMessage));
     }
 
     @Test
     @DisplayName("Логин пользователя с неверным password")
     @Description("Проверка ошибки логина пользователя с неверным password")
-    public void loginUserWithBadPassword() {
+    public void loginUserWithBadPasswordTest() {
         UserLoginRequest userBadLoginRequest = new UserLoginRequest(email, badPassword);
         userSteps.userLogin(userBadLoginRequest)
                 .assertThat().statusCode(HttpStatus.SC_UNAUTHORIZED)
                 .and()
-                .body("success", equalTo(false));
+                .body("success", equalTo(false))
+                .and()
+                .body("message", equalTo(userUnauthorizedMessage));
     }
 }

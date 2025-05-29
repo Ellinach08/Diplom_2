@@ -12,12 +12,14 @@ import static org.hamcrest.CoreMatchers.equalTo;
 
 public class UserCreateTest {
 
-    public static String name = RandomStringUtils.randomAlphabetic(10);
-    public static String password = RandomStringUtils.randomAlphabetic(10);
-    public static String email = String.format("%s@%s.ru", RandomStringUtils.randomAlphabetic(5).toLowerCase(),
+    private final String name = RandomStringUtils.randomAlphabetic(10);
+    private final String password = RandomStringUtils.randomAlphabetic(10);
+    private final String email = String.format("%s@%s.ru", RandomStringUtils.randomAlphabetic(5).toLowerCase(),
             RandomStringUtils.randomAlphabetic(3).toLowerCase());
 
     private final UserSteps userSteps = new UserSteps();
+    private final String userExistsMessage = "User already exists";
+    private final String requiredFieldsMessage = "Email, password and name are required fields";
 
     @After
     public void deleteUser() {
@@ -32,7 +34,7 @@ public class UserCreateTest {
     @Test
     @DisplayName("Создание уникального пользователя")
     @Description("Проверка создания нового уникального пользователя")
-    public void createNewUser() {
+    public void createNewUserTest() {
         UserCreateRequest userCreateRequest = new UserCreateRequest(email, password, name);
         userSteps.userCreate(userCreateRequest)
                 .assertThat().statusCode(HttpStatus.SC_OK)
@@ -43,42 +45,53 @@ public class UserCreateTest {
     @Test
     @DisplayName("Создание зарегистрированного ранее пользователя")
     @Description("Проверка ошибки создания зарегистрированного ранее пользователя")
-    public void createDuplicateUser() {
+    public void createDuplicateUserTest() {
         UserCreateRequest userCreateAndEditRequest = new UserCreateRequest(email, password, name);
         userSteps.userCreate(userCreateAndEditRequest);
         userSteps.userCreate(userCreateAndEditRequest)
                 .assertThat().statusCode(HttpStatus.SC_FORBIDDEN)
                 .and()
-                .body("success", equalTo(false));
+                .body("success", equalTo(false))
+                .and()
+                .body("message", equalTo(userExistsMessage));
     }
+
     @Test
     @DisplayName("Создание пользователя без поля email")
     @Description("Проверка ошибки создания пользователя без поля email")
-    public void createUserWithoutEmail() {
+    public void createUserWithoutEmailTest() {
         UserCreateRequest userCreateAndEditRequest = new UserCreateRequest(null, password, name);
         userSteps.userCreate(userCreateAndEditRequest)
                 .assertThat().statusCode(HttpStatus.SC_FORBIDDEN)
                 .and()
-                .body("success", equalTo(false));
+                .body("success", equalTo(false))
+                .and()
+                .body("message", equalTo(requiredFieldsMessage));
     }
+
     @Test
     @DisplayName("Создание пользователя без поля password")
     @Description("Проверка ошибки создания пользователя без поля password")
-    public void createUserWithoutPassword() {
+    public void createUserWithoutPasswordTest() {
         UserCreateRequest userCreateAndEditRequest = new UserCreateRequest(email, null, name);
         userSteps.userCreate(userCreateAndEditRequest)
                 .assertThat().statusCode(HttpStatus.SC_FORBIDDEN)
                 .and()
-                .body("success", equalTo(false));
+                .body("success", equalTo(false))
+                .and()
+                .body("message", equalTo(requiredFieldsMessage));
     }
+
     @Test
     @DisplayName("Создание пользователя без поля name")
     @Description("Проверка ошибки создания пользователя без поля name")
-    public void createUserWithoutName() {
+    public void createUserWithoutNameTest() {
         UserCreateRequest userCreateAndEditRequest = new UserCreateRequest(email, password, null);
         userSteps.userCreate(userCreateAndEditRequest)
                 .assertThat().statusCode(HttpStatus.SC_FORBIDDEN)
                 .and()
-                .body("success", equalTo(false));
+                .body("success", equalTo(false))
+                .and()
+                .body("message", equalTo(requiredFieldsMessage));
     }
 }

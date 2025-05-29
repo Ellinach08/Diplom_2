@@ -18,14 +18,16 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 
 public class OrderGetListTest {
-    private static final String name = RandomStringUtils.randomAlphabetic(10);
-    private static final String password = RandomStringUtils.randomAlphabetic(10);
-    private static final String email = String.format("%s@%s.ru", RandomStringUtils.randomAlphabetic(5).toLowerCase(),
+
+    private final String name = RandomStringUtils.randomAlphabetic(10);
+    private final String password = RandomStringUtils.randomAlphabetic(10);
+    private final String email = String.format("%s@%s.ru", RandomStringUtils.randomAlphabetic(5).toLowerCase(),
             RandomStringUtils.randomAlphabetic(3).toLowerCase());
+    private final String userUnauthorizedMessage = "You should be authorised";
 
     private final UserSteps userSteps = new UserSteps();
     private final OrderSteps orderSteps = new OrderSteps();
-    private static final List<String> ingredients = new ArrayList<>();
+    private final List<String> ingredients = new ArrayList<>();
 
     @Before
     public void setUp(){
@@ -47,17 +49,19 @@ public class OrderGetListTest {
     @Test
     @DisplayName("Получение списка заказов пользователя без авторизации")
     @Description("Проверка ошибки получения списка заказов пользователя без авторизации")
-    public void orderListWithoutAuthorization() {
+    public void orderListWithoutAuthorizationTest() {
         orderSteps.orderList()
                 .assertThat().statusCode(HttpStatus.SC_UNAUTHORIZED)
                 .and()
-                .body("success", equalTo(false));
+                .body("success", equalTo(false))
+                .and()
+                .body("message", equalTo(userUnauthorizedMessage));
     }
 
     @Test
     @DisplayName("Получение списка заказов пользователя после авторизации")
     @Description("Проверка получения списка заказов пользователя после авторизации")
-    public void orderListWithAuthorization() {
+    public void orderListWithAuthorizationTest() {
         UserLoginRequest userLoginRequest = new UserLoginRequest(email, password);
         orderSteps.orderListAfterLogin(userLoginRequest)
                 .assertThat().statusCode(HttpStatus.SC_OK)

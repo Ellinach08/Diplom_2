@@ -19,16 +19,18 @@ import static org.hamcrest.Matchers.isA;
 
 public class OrderCreateTest {
 
-    private static final String name = RandomStringUtils.randomAlphabetic(10);
-    private static final String password = RandomStringUtils.randomAlphabetic(10);
-    private static final String email = String.format("%s@%s.ru", RandomStringUtils.randomAlphabetic(5).toLowerCase(),
+    private final String name = RandomStringUtils.randomAlphabetic(10);
+    private final String password = RandomStringUtils.randomAlphabetic(10);
+    private final String email = String.format("%s@%s.ru", RandomStringUtils.randomAlphabetic(5).toLowerCase(),
             RandomStringUtils.randomAlphabetic(3).toLowerCase());
 
-    private static final List<String> ingredients = new ArrayList<>();
-    private static final List<String> badIngredients = new ArrayList<>();
+    private final List<String> ingredients = new ArrayList<>();
+    private final List<String> badIngredients = new ArrayList<>();
 
     private final UserSteps userSteps = new UserSteps();
     private final OrderSteps orderSteps = new OrderSteps();
+
+    private final String noOneIngredientsMessage = "Ingredient ids must be provided";
 
     @Before
     public void createUser(){
@@ -47,7 +49,7 @@ public class OrderCreateTest {
     @Test
     @DisplayName("Создание заказа после авторизации пользователя")
     @Description("Проверка создания заказа после авторизации пользователя")
-    public void orderCreateWithAuthorization() {
+    public void orderCreateWithAuthorizationTest() {
         UserLoginRequest userLoginRequest = new UserLoginRequest(email, password);
         ingredients.add("61c0c5a71d1f82001bdaaa6c");
         OrderCreateRequest orderCreateRequest = new OrderCreateRequest(ingredients);
@@ -62,7 +64,7 @@ public class OrderCreateTest {
     @Test
     @DisplayName("Создание заказа без авторизации пользователя")
     @Description("Проверка создания заказа без авторизации пользователя")
-    public void orderCreateWithoutAuthorization() {
+    public void orderCreateWithoutAuthorizationTest() {
         ingredients.add("61c0c5a71d1f82001bdaaa6c");
         OrderCreateRequest orderCreateRequest = new OrderCreateRequest(ingredients);
         orderSteps.orderCreate(orderCreateRequest)
@@ -76,19 +78,21 @@ public class OrderCreateTest {
     @Test
     @DisplayName("Создание заказа без ингредиентов после авторизации пользователя")
     @Description("Проверка ошибки создания заказа без ингредиентов после авторизации пользователя")
-    public void orderCreateWithAuthorizationWithoutIngredients() {
+    public void orderCreateWithAuthorizationWithoutIngredientsTest() {
         UserLoginRequest userLoginRequest = new UserLoginRequest(email, password);
         OrderCreateRequest orderCreateRequest = new OrderCreateRequest(ingredients);
         orderSteps.orderCreateAfterLogin(userLoginRequest, orderCreateRequest)
                 .assertThat().statusCode(HttpStatus.SC_BAD_REQUEST)
                 .and()
-                .body("success", equalTo(false));
+                .body("success", equalTo(false))
+                .and()
+                .body("message", equalTo(noOneIngredientsMessage));
     }
 
     @Test
     @DisplayName("Создание заказа с отсутствующими ингредиентами после авторизации пользователя")
     @Description("Проверка ошибки создания заказа с отсутствующими ингредиентами после авторизации пользователя")
-    public void orderCreateWithAuthorizationWithBadIngredients() {
+    public void orderCreateWithAuthorizationWithBadIngredientsTest() {
         UserLoginRequest userLoginRequest = new UserLoginRequest(email, password);
         badIngredients.add(RandomStringUtils.randomAlphabetic(10));
         OrderCreateRequest orderCreateRequest = new OrderCreateRequest(badIngredients);
