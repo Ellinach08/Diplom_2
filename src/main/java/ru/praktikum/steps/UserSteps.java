@@ -53,13 +53,16 @@ public class UserSteps {
                 .patch(USER)
                 .then();
     }
-    @Step("Удаление пользователя без авторизации")
+
+    @Step("Удаление пользователя по токену")
     public ValidatableResponse userDelete(String accessToken) {
-        return spec()
+        return given()
+                .baseUri(BASE_URL)
                 .header("Authorization", accessToken)
                 .delete(USER)
                 .then();
     }
+
     @Step("Удаление пользователя после авторизации")
     public ValidatableResponse userDeleteAfterLogin(UserLoginRequest userLoginRequest) {
         Response response = userLogin(userLoginRequest)

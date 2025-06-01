@@ -1,5 +1,6 @@
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.After;
@@ -28,11 +29,15 @@ public class OrderGetListTest {
     private final UserSteps userSteps = new UserSteps();
     private final OrderSteps orderSteps = new OrderSteps();
     private final List<String> ingredients = new ArrayList<>();
+    private String accessToken;
+    private ValidatableResponse userResponse;
 
     @Before
     public void setUp(){
         UserCreateRequest userCreateRequest = new UserCreateRequest(email, password, name);
-        userSteps.userCreate(userCreateRequest);
+        userResponse = userSteps.userCreate(userCreateRequest);
+        accessToken = userResponse.extract().path("accessToken");
+
         UserLoginRequest userLoginRequest = new UserLoginRequest(email, password);
         ingredients.add("61c0c5a71d1f82001bdaaa6c");
         OrderCreateRequest orderCreateRequest = new OrderCreateRequest(ingredients);
@@ -41,8 +46,7 @@ public class OrderGetListTest {
 
     @After
     public void tearDown() {
-        UserLoginRequest userLoginRequest = new UserLoginRequest(email, password);
-        userSteps.userDeleteAfterLogin(userLoginRequest);
+        userSteps.userDelete(accessToken);
         ingredients.clear();
     }
 

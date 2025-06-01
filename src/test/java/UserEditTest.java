@@ -1,5 +1,6 @@
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.After;
@@ -26,18 +27,19 @@ public class UserEditTest {
     private final String userUnauthorizedMessage = "You should be authorised";
 
     private final UserSteps userSteps = new UserSteps();
-    private String delEmail, delPassword;
+    private String accessToken;
+    private ValidatableResponse userResponse;
 
     @Before
     public void createUser(){
         UserCreateRequest userCreateRequest = new UserCreateRequest(email, password, name);
-        userSteps.userCreate(userCreateRequest);
+        userResponse = userSteps.userCreate(userCreateRequest);
+        accessToken = userResponse.extract().path("accessToken");
     }
 
     @After
     public  void deleteUser() {
-        UserLoginRequest userLoginRequest = new UserLoginRequest(delEmail, delPassword);
-        userSteps.userDeleteAfterLogin(userLoginRequest);
+        userSteps.userDelete(accessToken);
     }
 
     @Test
@@ -52,10 +54,6 @@ public class UserEditTest {
                 .body("success", equalTo(true))
                 .and()
                 .body("user.email", equalTo(editEmail));
-
-        delEmail = editEmail;
-        delPassword = password;
-
     }
 
     @Test
@@ -70,9 +68,6 @@ public class UserEditTest {
                 .body("success", equalTo(false))
                 .and()
                 .body("message", equalTo(userUnauthorizedMessage));
-
-        delEmail = email;
-        delPassword = password;
     }
 
     @Test
@@ -91,9 +86,6 @@ public class UserEditTest {
                 .assertThat().statusCode(HttpStatus.SC_OK)
                 .and()
                 .body("success", equalTo(true));
-
-        delPassword = editPassword;
-        delEmail = email;
     }
 
     @Test
@@ -107,9 +99,6 @@ public class UserEditTest {
                 .body("success", equalTo(false))
                 .and()
                 .body("message", equalTo(userUnauthorizedMessage));
-
-        delEmail = email;
-        delPassword = password;
     }
 
     @Test
@@ -125,10 +114,8 @@ public class UserEditTest {
                 .body("success", equalTo(true))
                 .and()
                 .body("user.name", equalTo(editName));
-
-        delEmail = email;
-        delPassword = password;
     }
+
     @Test
     @DisplayName("Обновление name пользователя без авторизации")
     @Description("Проверка ошибки обновления name пользователя без авторизации")
@@ -140,9 +127,6 @@ public class UserEditTest {
                 .body("success", equalTo(false))
                 .and()
                 .body("message", equalTo(userUnauthorizedMessage));
-
-        delEmail = email;
-        delPassword = password;
     }
 
 }

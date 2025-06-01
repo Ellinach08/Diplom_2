@@ -1,5 +1,6 @@
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.After;
@@ -23,17 +24,19 @@ public class UserLoginTest {
     private final String userUnauthorizedMessage = "email or password are incorrect";
 
     private final UserSteps userSteps = new UserSteps();
+    private String accessToken;
+    private ValidatableResponse userResponse;
 
     @Before
     public void createUser(){
         UserCreateRequest userCreateRequest = new UserCreateRequest(email, password, name);
-        userSteps.userCreate(userCreateRequest);
+        userResponse = userSteps.userCreate(userCreateRequest);
+        accessToken = userResponse.extract().path("accessToken");
     }
 
     @After
     public  void deleteUser() {
-        UserLoginRequest userLoginRequest = new UserLoginRequest(email, password);
-        userSteps.userDeleteAfterLogin(userLoginRequest);
+        userSteps.userDelete(accessToken);
     }
 
     @Test
